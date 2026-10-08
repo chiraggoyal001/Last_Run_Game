@@ -80,11 +80,15 @@ export class Player {
     const canTurn = Math.abs(this.speed) > 5;
     if (canTurn) {
       const turnDirection = this.speed >= 0 ? 1 : -1; // Invert steering naturally in reverse
-      if (inputs.steerLeft) {
-        this.angle -= currentSteerRate * turnDirection * dt;
-      }
-      if (inputs.steerRight) {
-        this.angle += currentSteerRate * turnDirection * dt;
+      if (inputs.steerValue !== 0) {
+        this.angle += currentSteerRate * inputs.steerValue * turnDirection * dt;
+      } else {
+        if (inputs.steerLeft) {
+          this.angle -= currentSteerRate * turnDirection * dt;
+        }
+        if (inputs.steerRight) {
+          this.angle += currentSteerRate * turnDirection * dt;
+        }
       }
     }
 

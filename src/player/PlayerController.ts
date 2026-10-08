@@ -1,6 +1,7 @@
 export interface ControlInputs {
   steerLeft: boolean;
   steerRight: boolean;
+  steerValue: number; // -1.0 (full left) to +1.0 (full right)
   brake: boolean;
 }
 
@@ -15,6 +16,7 @@ export class PlayerController {
   // Touch / Virtual state
   private touchLeft: boolean = false;
   private touchRight: boolean = false;
+  private touchSteerValue: number = 0;
   private touchBrake: boolean = false;
 
   // Pause / Restart callbacks
@@ -89,12 +91,22 @@ export class PlayerController {
   }
 
   // Touch setters invoked by on-screen touch overlay
+  public setTouchSteer(value: number): void {
+    this.touchSteerValue = Math.max(-1, Math.min(1, value));
+    this.touchLeft = this.touchSteerValue < -0.15;
+    this.touchRight = this.touchSteerValue > 0.15;
+  }
+
   public setTouchLeft(pressed: boolean): void {
     this.touchLeft = pressed;
+    if (pressed) this.touchSteerValue = -1;
+    else if (this.touchSteerValue < 0) this.touchSteerValue = 0;
   }
 
   public setTouchRight(pressed: boolean): void {
     this.touchRight = pressed;
+    if (pressed) this.touchSteerValue = 1;
+    else if (this.touchSteerValue > 0) this.touchSteerValue = 0;
   }
 
   public setTouchBrake(pressed: boolean): void {
@@ -102,9 +114,15 @@ export class PlayerController {
   }
 
   public getInputs(): ControlInputs {
+    let steerVal = 0;
+    if (this.keyLeft) steerVal = -1;
+    else if (this.keyRight) steerVal = 1;
+    else steerVal = this.touchSteerValue;
+
     return {
       steerLeft: this.keyLeft || this.touchLeft,
       steerRight: this.keyRight || this.touchRight,
+      steerValue: steerVal,
       brake: this.keyBrake || this.touchBrake
     };
   }
@@ -115,6 +133,7 @@ export class PlayerController {
     this.keyBrake = false;
     this.touchLeft = false;
     this.touchRight = false;
+    this.touchSteerValue = 0;
     this.touchBrake = false;
   }
 }
